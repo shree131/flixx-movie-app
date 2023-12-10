@@ -58,6 +58,10 @@ const displayMovieDetails = async () => {
     const queryStr = window.location.search.slice(1).split('=');
     const movieId = getQueryObject(queryStr).id;
     const movie = await fetchAPIData(`movie/${movieId}`);
+
+    // Overlay background image
+    displayBackgroungImage('movie', movie.backdrop_path);
+
     displayDetails(movie, true);
 };
 
@@ -65,7 +69,19 @@ const displayTVDetails = async () => {
     const queryStr = window.location.search.slice(1).split('=');
     const seriesId = getQueryObject(queryStr).id;
     const show = await fetchAPIData(`tv/${seriesId}`);
+
+    // Overlay background image
+    displayBackgroungImage('show', show.backdrop_path);
+
     displayDetails(show, false);
+};
+
+const getQueryObject = (queryStr) => {
+    let paramsObj = {};
+    for (let i = 0; i < queryStr.length; i += 2) {
+        paramsObj[queryStr[i]] = queryStr[i + 1];
+    }
+    return paramsObj;
 };
 
 const displayDetails = (item, isMovie) => {
@@ -116,18 +132,19 @@ const displayDetails = (item, isMovie) => {
     divTop.appendChild(divInfo);
 };
 
-const getQueryObject = (queryStr) => {
-    let paramsObj = {};
-    for (let i = 0; i < queryStr.length; i += 2) {
-        paramsObj[queryStr[i]] = queryStr[i + 1];
-    }
-    return paramsObj;
+// Display backdrop on details pages
+const displayBackgroungImage = (type, backdropPath) => {
+    const overlayDiv = document.createElement('div');
+    overlayDiv.style.backgroundImage = `url(https://image.tmdb.org/t/p/original/${backdropPath})`;
+    overlayDiv.classList.add('backdrop');
+
+    const parentDiv = type === 'movie' ? document.querySelector('#movie-details') : document.querySelector('#show-details');
+    parentDiv.appendChild(overlayDiv);
 };
 
 // Fetch data from TMDB API
 const fetchAPIData = async (endpoint) => {
     const API_URL = 'https://api.themoviedb.org/3/';
-    // const API_KEY = 'f7cad7e0325a6e76fff0ccfbee7268fc';
     //const response = await fetch(`${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US`);
 
     showSpinner();
