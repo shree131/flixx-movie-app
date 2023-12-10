@@ -14,25 +14,44 @@ const displayPopularMovies = async () => {
     const { results } = await fetchAPIData('movie/popular');
 
     results.forEach(movie => {
-        const cardDiv = document.createElement('div');
-        const cardBody = document.createElement('div');
-        const cardImg = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'images/no-image.jpg';
+        displayCard(movie, true);
+    });
+};
 
-        cardDiv.classList.add('card');
-        cardDiv.innerHTML = `<a href="movie-details.html?id=${movie.id}">
+// Display popular TV shows
+const displayPopularShows = async () => {
+    const { results } = await fetchAPIData('tv/popular');
+
+    results.forEach(show => {
+        displayCard(show, false);
+    });
+};
+
+// Display movies and TV shows card
+const displayCard = (item, isMovie) => {
+    const cardDiv = document.createElement('div');
+    const cardBody = document.createElement('div');
+    const parentId = isMovie ? '#popular-movies' : '#popular-shows';
+
+    const cardImg = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'images/no-image.jpg';
+    const link = isMovie ? `movie-details.html?id=${item.id}` : `tv-details.html?id=${item.id}`
+    const name = isMovie ? item.original_title : item.name;
+    const releaseInfo = isMovie ? `Release: ${item.release_date}` : `Aired: ${item.first_air_date}`;
+
+    cardDiv.classList.add('card');
+    cardDiv.innerHTML = `<a href=${link}>
             <img src="${cardImg}"
             class="card-img-top"
-            alt="${movie.title}" /> </a>`;
+            alt="${name}" /> </a>`;
 
-        cardBody.classList.add('card-body');
-        cardBody.innerHTML = `<h5 class="card-title">${movie.original_title}</h5>
+    cardBody.classList.add('card-body');
+    cardBody.innerHTML = `<h5 class="card-title">${name}</h5>
             <p class="card-text">
-            <small class="text-muted">Release: ${movie.release_date}</small>
+            <small class="text-muted">${releaseInfo}</small>
             </p>`;
 
-        cardDiv.appendChild(cardBody);
-        document.querySelector('#popular-movies').appendChild(cardDiv);
-    });
+    cardDiv.appendChild(cardBody);
+    document.querySelector(parentId).appendChild(cardDiv);
 };
 
 // Fetch data from TMDB API
@@ -75,6 +94,7 @@ const init = () => {
             break;
         case '/shows.html':
             console.log('Shows');
+            displayPopularShows();
             break
         case '/movie-details.html':
             console.log('Movie details');
