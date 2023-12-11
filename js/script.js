@@ -142,6 +142,50 @@ const displayBackgroungImage = (type, backdropPath) => {
     parentDiv.appendChild(overlayDiv);
 };
 
+// Display slider movies
+const displaySlider = async () => {
+    const { results } = await fetchAPIData('movie/now_playing');
+    console.log(results);
+    results.forEach(movie => {
+        const divSlide = document.createElement('div');
+        const imgSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'images/no-image.jpg';
+
+        divSlide.classList.add('swiper-slide');
+        divSlide.innerHTML = `<a href="movie-details.html?id=${movie.id}">
+        <img src="${imgSrc}" alt="${movie.original_title}" /> </a>
+        <h4 class="swiper-rating">
+        <i class="fas fa-star text-secondary"></i> ${movie.vote_average.toFixed(1)} / 10
+        </h4>`;
+
+        document.querySelector('.swiper-wrapper').appendChild(divSlide);
+        initSwiper();
+    });
+};
+
+function initSwiper() {
+    const swiper = new Swiper('.swiper', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        freeMode: true,
+        loop: true,
+        autoplay: {
+            delay: 2000,
+            disableOnInteraction: true,
+        },
+        breakpoints: {
+            500: {
+                slidesPerView: 2,
+            },
+            700: {
+                slidesPerView: 3,
+            },
+            1200: {
+                slidesPerView: 4,
+            },
+        },
+    });
+}
+
 // Fetch data from TMDB API
 const fetchAPIData = async (endpoint) => {
     const API_URL = 'https://api.themoviedb.org/3/';
@@ -182,6 +226,7 @@ const init = () => {
         case '/index.html':
             console.log('Home');
             displayPopularMovies();
+            displaySlider();
             break;
         case '/shows.html':
             console.log('Shows');
