@@ -162,6 +162,9 @@ const search = async () => {
             return;
         }
 
+        // Display Heading
+        displaySearchHeading();
+
         // Display results
         results.forEach(item => {
             displayCard(item, isMovie, displayLocation);
@@ -174,6 +177,14 @@ const search = async () => {
         showAlert('Search Term Cannot Be Empty', 'error');
     }
 
+};
+
+// Display search heading
+const displaySearchHeading = () => {
+    const h2 = document.createElement('h2');
+    h2.setAttribute('id', 'search-header')
+    h2.appendChild(document.createTextNode(`Displaying ${state.search.page} of ${state.search.totalPages} Pages`));
+    document.querySelector('#search-results-heading').appendChild(h2);
 };
 
 // Display Pagination
@@ -207,6 +218,7 @@ const navigatePrev = () => {
 };
 
 const clearSearchResults = () => {
+    document.querySelector('#search-header').remove();
     document.querySelector('.page-counter').remove();
     cardDiv = document.querySelectorAll('.card');
     cardDiv.forEach(card => card.remove());
