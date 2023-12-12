@@ -154,17 +154,62 @@ const search = async () => {
         // Fetch data and display
         const isMovie = type === 'movie' ? true : false;
         const endpoint = isMovie ? 'search/movie' : 'search/tv';
-        const { results } = await fetchSearchData(endpoint, searchTerm);
+        const { results, total_pages } = await fetchSearchData(endpoint, searchTerm, state.search.page);
+        state.search.totalPages = total_pages;
+
+        if (results.length === 0) {
+            showAlert('Search Complete: No Results Found. Search Another Term.', 'success');
+            return;
+        }
 
         // Display results
         results.forEach(item => {
             displayCard(item, isMovie, displayLocation);
         });
 
+        // Display current page number
+        displayPagination();
+
     } else {
-        showAlert('Search Term Cannot Be Empty');
+        showAlert('Search Term Cannot Be Empty', 'error');
     }
 
+};
+
+// Display Pagination
+const displayPagination = () => {
+    const pgCounter = document.createElement('div');
+    pgCounter.classList.add('page-counter');
+    pgCounter.appendChild(document.createTextNode(`Page ${state.search.page} of ${state.search.totalPages}`));
+
+    document.querySelector('.pagination').appendChild(pgCounter);
+};
+
+/* Navigate Pages */
+const navigateNext = () => {
+    if (state.search.page === state.search.totalPages) {
+        return;
+    }
+
+    state.search.page = state.search.page + 1;
+    clearSearchResults();
+    search();
+};
+
+const navigatePrev = () => {
+    if (state.search.page === 1) {
+        return;
+    }
+
+    state.search.page = state.search.page - 1;
+    clearSearchResults();
+    search();
+};
+
+const clearSearchResults = () => {
+    document.querySelector('.page-counter').remove();
+    cardDiv = document.querySelectorAll('.card');
+    cardDiv.forEach(card => card.remove());
 };
 
 // Convert query parameters into an object
@@ -235,11 +280,11 @@ const fetchAPIData = async (endpoint) => {
 };
 
 // Fetch Seach Data from API
-const fetchSearchData = async (endpoint, searchTerm) => {
+const fetchSearchData = async (endpoint, searchTerm, page) => {
     const API_URL = 'https://api.themoviedb.org/3/';
 
     showSpinner();
-    const res = await fetch(`${API_URL}${endpoint}?query=${searchTerm}&include_adult=false&language=en-US`, state.options);
+    const res = await fetch(`${API_URL}${endpoint}?query=${searchTerm}&include_adult=false&language=en-US&page=${page}`, state.options);
     const results = await res.json();
     hideSpinner();
 
@@ -247,9 +292,9 @@ const fetchSearchData = async (endpoint, searchTerm) => {
 };
 
 // Show search alert
-const showAlert = (message) => {
+const showAlert = (message, className) => {
     const alertDiv = document.createElement('div');
-    alertDiv.classList.add('alert', 'alert-error');
+    alertDiv.classList.add('alert', className);
     alertDiv.appendChild(document.createTextNode(message));
     document.querySelector('#alert').appendChild(alertDiv);
 
@@ -300,6 +345,10 @@ const init = () => {
         case '/search.html':
             console.log('Search Page');
             search();
+
+            // Event Listners for navigation buttons
+            document.querySelector('#next').addEventListener('click', navigateNext);
+            document.querySelector('#prev').addEventListener('click', navigatePrev);
             break;
     }
 
